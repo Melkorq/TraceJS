@@ -61,32 +61,46 @@ public class Program
         {
             Console.WriteLine("Choose an action:");
             Console.WriteLine("1 - List inline JavaScript in the given page");
-            Console.WriteLine("2 - List external JavaScript file URLs");
-            Console.WriteLine("3 - Analyze paths inside external JavaScript");
-            Console.WriteLine("4 - Exit");
+            Console.WriteLine("2 - Scan URLs and paths inside the main page");
+            Console.WriteLine("3 - List external JavaScript file URLs");
+            Console.WriteLine("4 - Analyze paths inside external JavaScript");
+            Console.WriteLine("5 - Exit");
 
             switch (Console.ReadLine())
             {
                 case "1":
-                    Console.Write("Enter URL: ");
+                    Console.Write("Enter URL like 'https://example.com': ");
                     url = Console.ReadLine();
                     html = await FetchDataAsynch(url);
                     await FetchInnerJS(html);
                     break;
-                case "2":          // Bu kısım daha ayrıntılı hale getirilebilir.
-                    Console.Write("Enter URL: ");
+                case "2":
+                    Console.Clear();
+                    Console.Write("Enter URL like 'https://example.com': ");
+                    url = Console.ReadLine();
+                    await OnlyCheckBaseURLpaths(url);
+                    break;
+                case "3":
+                    Console.Clear();
+                    Console.Write("Enter URL like 'https://example.com': ");
                     url = Console.ReadLine();
                     html = await FetchDataAsynch(url);
                     await FetchExternalJS(html, url);
                     break;
-                case "3":
-                    Console.Write("Enter URL: ");
+                case "4":
+                    Console.Clear();
+                    Console.Write("Enter URL like 'https://example.com': ");
                     url = Console.ReadLine();
                     html = await FetchDataAsynch(url);
                     await FindPath_in_ExternalJS(html, url);
                     break;
-                case "4":
+                case "5":
                     return;
+                default:
+                    Console.Clear();
+                    Console.WriteLine("Bad Input.");
+                    break;
+              
             }
         }
     }
@@ -103,6 +117,7 @@ public class Program
         }
         catch (HttpRequestException e)
         {
+            Console.WriteLine($"Hata: {e.Message}");
             return string.Empty;
         }
     }
@@ -162,13 +177,15 @@ public class Program
                 foreach (var node in scriptNode)
                 {
                     var srcValue = node.GetAttributeValue("src", null); 
-                    if (srcValue.StartsWith("https://")) // URI kullanılarak daha detaylı şekilde URL'ler düzenlenmeli. 
+                    if (srcValue.StartsWith("https://")) 
                     {
                         fullUrl = srcValue;
                     }
                     else
                     {
-                        fullUrl = url + srcValue;
+                        var baseUri = new Uri(url);
+                        var fullUri = new Uri(baseUri, srcValue);
+                        fullUrl = fullUri.ToString();
                     }
                     Console.WriteLine($"URL: {fullUrl}");
                     urls.Add(fullUrl);
@@ -178,7 +195,7 @@ public class Program
             else
             {
                 Console.WriteLine("No external script tags found.");
-                return null;
+                return new List<string>();
             }
         }
 
@@ -195,7 +212,6 @@ public class Program
         foreach (var jsUrl in jsUrls)
         {
             var jsContent = await FetchDataAsynch(jsUrl);
-            var baseurlhtml = await FetchDataAsynch(url);
             if (string.IsNullOrEmpty(jsContent))
             {
                 Console.WriteLine($"Empty or failed to fetch: {jsUrl}");
@@ -208,14 +224,28 @@ public class Program
                 Console.WriteLine($"Found in {jsUrl}: {match.Value}");
             }
 
-            var matches2 = _urlRegex.Matches(baseurlhtml);
-            foreach (Match match in matches2)
-            {
-                Console.WriteLine($"Found in {url}: {match.Value}");
-            }
         }
 
     }
+
+    public static async Task OnlyCheckBaseURLpaths(string url)
+    {
+        var html = await FetchDataAsynch(url);
+
+        if (string.IsNullOrEmpty(html))
+        {
+            Console.WriteLine("Not Found HTML");
+            return;
+        }
+
+        var matches = _urlRegex.Matches(html);
+        foreach (Match match in matches)
+        {
+            Console.WriteLine($"Found in {url}: {match.Value}");
+        }
+    }
+
+
 
 }
 
