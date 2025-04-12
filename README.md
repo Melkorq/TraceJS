@@ -31,3 +31,8 @@ This tool uses a well-known pattern inspired by [LinkFinder](https://github.com/
 - Path references
 - File requests
 - Hidden resources
+
+## 🛠 Planned Features
+-  Save results to file
+-  URL deduplication and filtering
+-  Multi-threaded JS analysis for performance boost
