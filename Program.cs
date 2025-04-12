@@ -60,10 +60,10 @@ public class Program
         while (true)
         {
             Console.WriteLine("Choose an action:");
-            Console.WriteLine("1 - List inline JavaScript in the given page");
-            Console.WriteLine("2 - Scan URLs and paths inside the main page");
+            Console.WriteLine("1 - Show inline JavaScript code from the page");
+            Console.WriteLine("2 - Extract URLs and paths from the page's HTML");
             Console.WriteLine("3 - List external JavaScript file URLs");
-            Console.WriteLine("4 - Analyze paths inside external JavaScript");
+            Console.WriteLine("4 - Analyze paths inside external JavaScript files");
             Console.WriteLine("5 - Exit");
 
             switch (Console.ReadLine())
